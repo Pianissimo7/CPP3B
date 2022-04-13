@@ -35,7 +35,7 @@ double Matrix::get_cell(int x, int y) const{
     if (x >= Width || y >= Height || x < 0 || y < 0) {
         throw std::runtime_error("x or y out of range");
     }
-    return Vector[(size_t)(y * Width + x)];
+    return Vector[((size_t)y * (size_t)Width + (size_t)x)];
 }
 vector<double> Matrix::get_vector() const{
     return Vector;
@@ -45,10 +45,7 @@ void Matrix::set_cell(int x, int y, double value) {
     if (x >= Width || y >= Height || x < 0 || y < 0) {
         throw std::runtime_error("x or y out of range");
     }
-    Vector[(size_t)(y * Width + x)] = value;
-}
-void Matrix::set_vector(vector<double> vector) {
-    Vector = vector;
+    Vector[((size_t)y * (size_t)Width + (size_t)x)] = value;
 }
 
 //+++++++++++++++++++++++++++++++++++++++
@@ -98,7 +95,7 @@ Matrix& Matrix::operator-=(const Matrix& rMat) {
     return *this;
 }
 // unary - operator
-Matrix zich::operator-(Matrix mat) {
+Matrix zich::operator-(const Matrix& mat) {
     return mat * (-1);
 }
 // --mat
@@ -145,10 +142,8 @@ Matrix& Matrix::operator*=(const Matrix& rMat) {
     if (get_width() != rMat.get_height()) {
         throw std::runtime_error("the left matrix's width must be equal to the right matrix's height");
     }
-    vector<double> vector;
-    for (int i = 0 ; i < rMat.get_width() * get_height() ; i++) {
-        vector.push_back(0);
-    }
+    vector<double> vector((size_t)(rMat.get_width() * get_height()), 0);
+
     Matrix mat{vector, get_height(), rMat.get_width()};
     for (int i = 0 ; i < get_height() ; i++) {
         for (int j = 0 ; j < rMat.get_width() ; j++) {
@@ -166,7 +161,7 @@ Matrix& Matrix::operator*=(const Matrix& rMat) {
 //<><><><><><><><><><><><><><><><><><><><>
 // <<
 ostream& zich::operator<<(ostream& output, const Matrix& mat) {
-    string mat_str = "";
+    string mat_str;
     for (int i = 0 ; i < mat.get_height() ; i++) {
         mat_str += "[";
         for (int j = 0 ; j < mat.get_width() ; j++) {
@@ -195,9 +190,6 @@ istream& zich::operator>>(istream& input, Matrix& mat) {
     //  vector: {1,1,1,1,1,1,1,1,1,1,1,1}
     string str_in;
     getline(input, str_in);
-    
-    // remove this later
-    cout << str_in << endl;
 
     if (regex_match(str_in, regex("(\\[([0-9]+( [0-9]+)*)\\], )*\\[([0-9]+( [0-9]+)*)\\]"))){
         vector<double> vector;
@@ -216,10 +208,20 @@ istream& zich::operator>>(istream& input, Matrix& mat) {
         
         int height = 0;
 
-        for (size_t i = 0; i < str_in.size(); i++)
-            if (str_in[i] == '[') height++;
-
-        int width = amount/height;
+        for (size_t i = 0; i < str_in.size(); i++) {
+            if (str_in[i] == '[') { 
+                height++;
+            }
+        }
+        
+        int width = 0;
+        
+        if (height != 0) {
+            width = amount/height;
+        }
+        else {
+            throw std::runtime_error("matrix cant be of height 0");
+        }
 
         Matrix temp{vector, width, height};
         mat = temp;
@@ -234,7 +236,8 @@ istream& zich::operator>>(istream& input, Matrix& mat) {
 // relations between matrixes
 bool Matrix::operator<(const Matrix& rMat) const {
     same_size(rMat);
-    double sum1 = 0, sum2 = 0;
+    double sum1 = 0;
+    double sum2 = 0;
     for (size_t i = 0 ; i < Vector.size() ; i++) {
         sum1 += Vector[i];
         sum2 += rMat.get_vector()[i];
@@ -246,7 +249,8 @@ bool Matrix::operator<=(const Matrix& rMat) const {
 }
 bool Matrix::operator>(const Matrix& rMat) const {
     same_size(rMat);
-    double sum1 = 0, sum2 = 0;
+    double sum1 = 0;
+    double sum2 = 0;
     for (size_t i = 0 ; i < Vector.size() ; i++) {
         sum1 += Vector[i];
         sum2 += rMat.get_vector()[i];
@@ -269,7 +273,7 @@ bool Matrix::operator!=(const Matrix& rMat) const {
     return !(*this == rMat);
 }
 
-bool Matrix::same_size(Matrix mat) const{
+bool Matrix::same_size(const Matrix& mat) const{
     if (mat.get_height() != Height || mat.get_width() != Width) {
         throw std::runtime_error("cant operate on matrixes of different size");    
     }

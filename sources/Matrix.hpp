@@ -19,13 +19,12 @@ namespace zich {
             vector<double> get_vector() const;
             // set functions
             void set_cell(int x, int y, double value);
-            void set_vector(vector<double> vector);
             // checks
-            bool same_size(Matrix mat) const;
+            bool same_size(const Matrix& mat) const;
 
             //+++++++++++++++++++++++++++++++++++++++
             // mat + mat
-            friend Matrix operator+(Matrix lMat, const Matrix& rMat);
+            friend Matrix operator+(Matrix lMat, const Matrix& Matr);
             // += operator
             Matrix& operator+=(const Matrix& rMat);
             // unary + operator
@@ -41,7 +40,7 @@ namespace zich {
             // -= operator
             Matrix& operator-=(const Matrix& rMat);
             // unary - operator
-            friend Matrix operator-(Matrix mat);
+            friend Matrix operator-(const Matrix& mat);
             // --mat
             Matrix& operator--();
             // mat--
