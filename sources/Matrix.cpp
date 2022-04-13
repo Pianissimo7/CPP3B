@@ -1,7 +1,9 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <map>
 #include <vector>
+#include <regex>
 #include "Matrix.hpp"
 
 using namespace std;
@@ -183,6 +185,48 @@ ostream& zich::operator<<(ostream& output, const Matrix& mat) {
 }
 // >>
 istream& zich::operator>>(istream& input, Matrix& mat) {
+    // "[1 1 1 1], [1 1 1 1], [1 1 1 1]\n"
+    //              |
+    //              V
+    //         [1, 1, 1, 1]
+    //         [1, 1, 1, 1]
+    //         [1, 1, 1, 1]
+    //  width: 4, height 3
+    //  vector: {1,1,1,1,1,1,1,1,1,1,1,1}
+    string str_in;
+    getline(input, str_in);
+    
+    // remove this later
+    cout << str_in << endl;
+
+    if (regex_match(str_in, regex("(\\[([0-9]+( [0-9]+)*)\\], )*\\[([0-9]+( [0-9]+)*)\\]"))){
+        vector<double> vector;
+ 
+        regex words_regex("[0-9]+");
+        auto words_begin = sregex_iterator(str_in.begin(), str_in.end(), words_regex);
+        auto words_end = sregex_iterator();
+    
+        int amount = distance(words_begin, words_end);
+            
+        for (sregex_iterator i = words_begin; i != words_end; ++i) {
+            smatch match = *i;                                                 
+            string match_str = match.str(); 
+            vector.push_back((double)stoi(match_str));
+        }
+        
+        int height = 0;
+
+        for (size_t i = 0; i < str_in.size(); i++)
+            if (str_in[i] == '[') height++;
+
+        int width = amount/height;
+
+        Matrix temp{vector, width, height};
+        mat = temp;
+    }
+    else {
+        throw std::runtime_error("input format is not correct");
+    }
     return input;
 }
 
